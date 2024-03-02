@@ -1,0 +1,10 @@
+^Q:\GITHUBWINDOWS\RELIQUARIUM\CODE\SYNTH\BUILD\CMAKEFILES\E4AD838B9F22E9FBBECD72DD253E1621\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SQ:/GithubWindows/Reliquarium/code/Synth -BQ:/GithubWindows/Reliquarium/code/Synth/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file Q:/GithubWindows/Reliquarium/code/Synth/build/Synth.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

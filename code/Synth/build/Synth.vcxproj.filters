@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Q:\GithubWindows\Reliquarium\code\Synth\source\mypluginprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Q:\GithubWindows\Reliquarium\code\Synth\source\myplugincontroller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Q:\GithubWindows\Reliquarium\code\Synth\source\mypluginentry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Q:\VST_SDK\vst3sdk\public.sdk\source\main\dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Q:\GithubWindows\Reliquarium\code\Synth\source\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Q:\GithubWindows\Reliquarium\code\Synth\source\myplugincids.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Q:\GithubWindows\Reliquarium\code\Synth\source\mypluginprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Q:\GithubWindows\Reliquarium\code\Synth\source\myplugincontroller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Q:\GithubWindows\Reliquarium\code\Synth\resource\myplugineditor.uidesc" />
+    <CustomBuild Include="Q:\GithubWindows\Reliquarium\code\Synth\resource\223C07BD4A86536D888E7462265A99DD_snapshot.png">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Q:\GithubWindows\Reliquarium\code\Synth\resource\223C07BD4A86536D888E7462265A99DD_snapshot_2.0x.png">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Q:\GithubWindows\Reliquarium\code\Synth\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Q:\GithubWindows\Reliquarium\code\Synth\resource\win32resource.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{882D3437-53EF-36EF-BA51-596FE5253A6B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{6A697ECD-8E2A-3995-BA91-3C6B05FAB443}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{041F7794-4EBB-38EE-8BA4-68A0601D764F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
