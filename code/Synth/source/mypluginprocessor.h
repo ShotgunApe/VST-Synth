@@ -6,6 +6,9 @@
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
+// Custom header files
+#include "synthParams.h"
+
 namespace MyCompanyName {
 
 //------------------------------------------------------------------------
@@ -50,8 +53,14 @@ public:
 
 //------------------------------------------------------------------------
 protected:
-
+	float fOsc1 = default_Osc1;
+	float fOsc1Phase = 0.f;
+	float fFrequency = 0.f;
+	float fVolume = 0.f;
+	float fDeltaAnngle = 0.f;
 };
+
+#define TWO_PI (3.14159265f * 2.f)
 
 //------------------------------------------------------------------------
 } // namespace MyCompanyName

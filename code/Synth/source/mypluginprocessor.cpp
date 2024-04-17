@@ -8,6 +8,9 @@
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 
+// Required for event handling
+#include "public.sdk/source/vst/hosting/eventlist.h"
+
 using namespace Steinberg;
 
 namespace MyCompanyName {
@@ -68,7 +71,7 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 {
 	//--- First : Read inputs parameter changes-----------
 
-	/*if (data.inputParameterChanges)
+	if (data.inputParameterChanges)
 	{
 		int32 numParamsChanged = data.inputParameterChanges->getParameterCount ();
 		for (int32 index = 0; index < numParamsChanged; index++)
@@ -78,60 +81,21 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 				Vst::ParamValue value;
 				int32 sampleOffset;
 				int32 numPoints = paramQueue->getPointCount ();
+				paramQueue->getPoint(numPoints - 1, sampleOffset, value);
 				switch (paramQueue->getParameterId ())
 				{
+				case Osc_1:
+					fOsc1 = (float)value;
+					break;
 				}
 			}
 		}
-	}*/
+	}
 	
 	//--- Here you have to implement your processing
-
-	if (data.numSamples > 0)
-	{
-		//--- ------------------------------------------
-		// here as example a default implementation where we try to copy the inputs to the outputs:
-		// if less input than outputs then clear outputs
-		//--- ------------------------------------------
-		
-		int32 minBus = std::min (data.numInputs, data.numOutputs);
-		for (int32 i = 0; i < minBus; i++)
-		{
-			int32 minChan = std::min (data.inputs[i].numChannels, data.outputs[i].numChannels);
-			for (int32 c = 0; c < minChan; c++)
-			{
-				// do not need to be copied if the buffers are the same
-				if (data.outputs[i].channelBuffers32[c] != data.inputs[i].channelBuffers32[c])
-				{
-					memcpy (data.outputs[i].channelBuffers32[c], data.inputs[i].channelBuffers32[c],
-							data.numSamples * sizeof (Vst::Sample32));
-				}
-			}
-			data.outputs[i].silenceFlags = data.inputs[i].silenceFlags;
-				
-			// clear the remaining output buffers
-			for (int32 c = minChan; c < data.outputs[i].numChannels; c++)
-			{
-				// clear output buffers
-				memset (data.outputs[i].channelBuffers32[c], 0,
-						data.numSamples * sizeof (Vst::Sample32));
-
-				// inform the host that this channel is silent
-				data.outputs[i].silenceFlags |= ((uint64)1 << c);
-			}
-		}
-		// clear the remaining output buffers
-		for (int32 i = minBus; i < data.numOutputs; i++)
-		{
-			// clear output buffers
-			for (int32 c = 0; c < data.outputs[i].numChannels; c++)
-			{
-				memset (data.outputs[i].channelBuffers32[c], 0,
-						data.numSamples * sizeof (Vst::Sample32));
-			}
-			// inform the host that this bus is silent
-			data.outputs[i].silenceFlags = ((uint64)1 << data.outputs[i].numChannels) - 1;
-		}
+	Vst::IEventList* events = data.inputEvents;
+	if (events != NULL) {
+		int32 numEvent = events->getEventCount();
 	}
 
 	return kResultOk;
