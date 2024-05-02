@@ -6,6 +6,11 @@
 #include "myplugincids.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
 
+#include "pluginterfaces/base/ibstream.h"
+#include "base/source/fstreamer.h"
+
+#include "synthParams.h"
+
 using namespace Steinberg;
 
 namespace MyCompanyName {
@@ -25,6 +30,8 @@ tresult PLUGIN_API SynthController::initialize (FUnknown* context)
 	}
 
 	// Here you could register some parameters
+	setKnobMode(Vst::kLinearMode);
+	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, Osc_1);
 
 	return result;
 }
@@ -44,6 +51,15 @@ tresult PLUGIN_API SynthController::setComponentState (IBStream* state)
 	// Here you get the state of the component (Processor part)
 	if (!state)
 		return kResultFalse;
+
+	IBStreamer streamer(state, kLittleEndian);
+
+	float fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+
+	setParamNormalized(Osc_1, fval);
 
 	return kResultOk;
 }

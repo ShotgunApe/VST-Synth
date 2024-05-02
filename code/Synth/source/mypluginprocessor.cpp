@@ -96,6 +96,37 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 	Vst::IEventList* events = data.inputEvents;
 	if (events != NULL) {
 		int32 numEvent = events->getEventCount();
+		for (int32 i = 0; i < numEvent; i++) {
+			Vst::Event event;
+			if (events->getEvent(i, event) == kResultOk) {
+				switch (event.type) {
+					case Vst::Event::kNoteOnEvent:
+						fFrequency = 440.0f * powf(2.0f, (float)(event.noteOn.pitch - 69) / 12.f);
+						fDeltaAngle = TWO_PI * fFrequency / data.processContext->sampleRate;
+						fVolume = 0.3f;
+						fOsc1Phase = 0.f;
+						break;
+					case Vst::Event::kNoteOffEvent:
+						fVolume = 0.f;
+						break;
+				}
+			}
+		}
+	}
+
+	Vst::Sample32* outL = data.outputs[0].channelBuffers32[0];
+	Vst::Sample32* outR = data.outputs[0].channelBuffers32[1];
+
+	for (int32 i = 0; i < data.numSamples; i++) {
+
+		// Allows blending multiple osc should more be implemented
+		outL[i] = fOsc1 * sin(fOsc1Phase);
+		outL[i] *= fVolume;
+
+		// No panning support :(
+		outR[i] = outL[i];
+
+		fOsc1Phase += fDeltaAngle;
 	}
 
 	return kResultOk;
@@ -128,6 +159,15 @@ tresult PLUGIN_API SynthProcessor::setState (IBStream* state)
 	// called when we load a preset, the model has to be reloaded
 	IBStreamer streamer (state, kLittleEndian);
 	
+	float fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+	fOsc1 = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+
 	return kResultOk;
 }
 
@@ -136,6 +176,8 @@ tresult PLUGIN_API SynthProcessor::getState (IBStream* state)
 {
 	// here we need to save the model
 	IBStreamer streamer (state, kLittleEndian);
+
+	streamer.writeFloat(fOsc1);
 
 	return kResultOk;
 }
