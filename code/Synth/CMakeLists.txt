@@ -54,6 +54,8 @@ smtg_target_add_plugin_snapshots (Synth
     RESOURCES
         resource/223C07BD4A86536D888E7462265A99DD_snapshot.png
         resource/223C07BD4A86536D888E7462265A99DD_snapshot_2.0x.png
+	    resource/oscKnob.png
+	    resource/oscShapeKnob.png
 )
 
 target_link_libraries(Synth
