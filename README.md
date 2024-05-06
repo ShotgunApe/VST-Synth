@@ -18,12 +18,15 @@ cd build
 ```
 Next, from the VST_SDK folder, run the following command to build the SDK:
 ```
-cmake.exe -G "Visual Studio 17 2022" -A x64 vst3sdk -DSMTG_CREATE_PLUGIN_LINK=0
+cmake.exe -G "Visual Studio 17 2022" -A x64 -B build -S vst3sdk -DSMTG_CREATE_PLUGIN_LINK=0
 ```
 If successful, this will generate a .sln file which can view each example included in the SDK. If the error ```CMake Error: Could not create named generator Visual Studio 17 2022``` occurs, ensure that you are using the latest version of CMake.
 
-2. Generate the project solution file ```Synth.sln``` in the github repo. Navigate to ```VST-Synth-main/code/synth/``` and create the build folder, then use CMake again in a similar manner above.
-**CMakeLists.txt must be changed to where you installed the SDK. By default it uses ```Q:/VST_SDK/vst3sdk```.**
+2. Generate the project solution file ```Synth.sln``` in the github repo. Navigate to ```VST-Synth-main/code/``` and create the build folder, then use CMake again in a similar manner above:
+```
+cmake.exe -G "Visual Studio 17 2022" -A x64 -B build -S Synth -DSMTG_CREATE_PLUGIN_LINK=0
+```
+**NOTE: CMakeLists.txt must be changed to where you installed the SDK. By default it uses ```Q:/VST_SDK/vst3sdk```.**
 
 3. Open ```Synth.sln``` with Visual Studio 2022.
 
@@ -35,4 +38,4 @@ When launching, Post-Build Events may cause the error [MSB3073](https://learn.mi
 Synth >> Properties >> Configuration Properties >> Build Events >> Post-Build Event >> Use In Build >> No
 ```
 ## WIP and Current State
-Currently, this synthesizer supports monophonic sine waves and a custom UI. 
+Currently, this synthesizer supports monophonic sine, saw, square, and triangle waves with a custom UI. 
