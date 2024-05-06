@@ -6,4 +6,4 @@ enum {
 	kOsc_1_Shape = 102
 };
 
-#define default_Osc1 0.8
+#define default_Osc1 0.0

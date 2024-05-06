@@ -58,6 +58,7 @@ protected:
 	float fFrequency = 0.f;
 	float fVolume = 0.f;
 	float fDeltaAngle = 0.f;
+	float fOsc1Mode = 0.f;
 };
 
 #define TWO_PI (3.14159265f * 2.f)

@@ -31,6 +31,7 @@ smtg_add_vst3plugin(Synth
     source/myplugincontroller.h
     source/myplugincontroller.cpp
     source/mypluginentry.cpp
+    source/synthParams.h
 )
 
 #- VSTGUI Wanted ----
