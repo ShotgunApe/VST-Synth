@@ -38,4 +38,4 @@ When launching, Post-Build Events may cause the error [MSB3073](https://learn.mi
 Synth >> Properties >> Configuration Properties >> Build Events >> Post-Build Event >> Use In Build >> No
 ```
 ## WIP and Current State
-Currently, this synthesizer supports monophonic sine waves and a custom UI. 
+Currently, this synthesizer supports monophonic sine, saw, square, and triangle waves with a custom UI. 
