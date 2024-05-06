@@ -28,7 +28,7 @@ cmake.exe -G "Visual Studio 17 2022" -A x64 -B build -S Synth -DSMTG_CREATE_PLUG
 ```
 **NOTE: CMakeLists.txt must be changed to where you installed the SDK. By default it uses ```Q:/VST_SDK/vst3sdk```.**
 
-4. Open ```Synth.sln``` with Visual Studio 2022.
+3. Open ```Synth.sln``` with Visual Studio 2022.
 
 ## Solution Properties
 ```Synth.sln``` contains two solution configurations, ```Debug``` and ```Release```. When started, both launch the Synth via the VST3PluginTestHost, but using ```Debug``` allows for changes to be made to the UI. 
