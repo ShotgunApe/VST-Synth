@@ -33,8 +33,11 @@ tresult PLUGIN_API SynthController::initialize (FUnknown* context)
 
 	// Oscillator knobs
 	setKnobMode(Vst::kLinearMode);
-	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, Osc_1);
+	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_1);
 	parameters.addParameter(STR16("OSC1 Shape"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_1_Shape);
+
+	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_2);
+	parameters.addParameter(STR16("OSC2 Shape"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_2_Shape);
 
 	return result;
 }
@@ -62,8 +65,10 @@ tresult PLUGIN_API SynthController::setComponentState (IBStream* state)
 		return kResultFalse;
 	}
 
-	setParamNormalized(Osc_1, fval);
+	setParamNormalized(kOsc_1, fval);
 	setParamNormalized(kOsc_1_Shape, fval);
+	setParamNormalized(kOsc_2, fval);
+	setParamNormalized(kOsc_2_Shape, fval);
 
 	return kResultOk;
 }

@@ -83,12 +83,17 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 				int32 numPoints = paramQueue->getPointCount ();
 				paramQueue->getPoint(numPoints - 1, sampleOffset, value);
 				switch (paramQueue->getParameterId ()) {
-					case Osc_1:
+					case kOsc_1:
 						fOsc1 = (float)value;
+						break;
+					case kOsc_2:
+						fOsc2 = (float)value;
 						break;
 					case kOsc_1_Shape:
 						fOsc1Mode = (float)value;
 						break;
+					case kOsc_2_Shape:
+						fOsc2Mode = (float)value;
 				}
 			}
 		}
@@ -122,42 +127,71 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 	Vst::Sample32* outL = data.outputs[0].channelBuffers32[0];
 	Vst::Sample32* outR = data.outputs[0].channelBuffers32[1];
 
-	// TODO: Separate each wave into its own function for better editing
+	// TODO: Separate each wave into its own function for better editing - pass fOsc to be used and avoid duplicate code
 	for (int32 i = 0; i < data.numSamples; i++) {
+		// Process OSC 1 and OSC 2, then combine output
+
+		// OSC1
 		// Sine wave:
 		if (fOsc1Mode < 0.333f) {
 			outL[i] = fOsc1 * sin(fOsc1Phase);
-			outL[i] *= fVolume;
 		}
 		// Saw wave:
 		else if (fOsc1Mode < 0.666f) {
 			outL[i] = fOsc1 * (1.0f - (2.0f * fOsc1Phase / TWO_PI));
-			outL[i] *= fVolume;
 		}
 		// Square wave:
-		else if (fOsc1Mode < 1.0f) {
+		else if (fOsc1Mode < 0.999f) {
 			if (fOsc1Phase <= (TWO_PI / 2.f)) {
 				outL[i] = fOsc1 * 1.0f;
 			}
 			else {
 				outL[i] = fOsc1 * -1.0f;
 			}
-			outL[i] *= fVolume;
 		}
 		// Triangle wave:
-		else if (fOsc1Mode = 1.0f) {
+		else if (fOsc1Mode >= 0.999f) {
 			double temp = -1.0f + (2.0f * fOsc1Phase / TWO_PI);
 			outL[i] = fOsc1 * 2.0f * (fabs(temp) - 0.5f);
-			outL[i] *= fVolume;
 		}
 
-		// No panning support :(
+		// OSC 2
+		// Sine wave:
+		if (fOsc2Mode < 0.333f) {
+			outL[i] += fOsc2 * sin(fOsc2Phase);
+		}
+		// Saw wave:
+		else if (fOsc2Mode < 0.666f) {
+			outL[i] += fOsc2 * (1.0f - (2.0f * fOsc2Phase / TWO_PI));
+		}
+		// Square wave:
+		else if (fOsc2Mode < 0.999f) {
+			if (fOsc2Phase <= (TWO_PI / 2.f)) {
+				outL[i] += fOsc2 * 1.0f;
+			}
+			else {
+				outL[i] += fOsc2 * -1.0f;
+			}
+		}
+		// Triangle wave:
+		else if (fOsc2Mode >= 0.999f) {
+			double temp = -1.0f + (2.0f * fOsc2Phase / TWO_PI);
+			outL[i] += fOsc2 * 2.0f * (fabs(temp) - 0.5f);
+		}
+
+		outL[i] *= fVolume;
+
+		// No panning support yet :(
 		outR[i] = outL[i];
 
 		fOsc1Phase += fDeltaAngle;
+		fOsc2Phase += fDeltaAngle;
 
 		while (fOsc1Phase >= TWO_PI) {
 			fOsc1Phase -= TWO_PI;
+		}
+		while (fOsc2Phase >= TWO_PI) {
+			fOsc2Phase -= TWO_PI;
 		}
 	}
 
@@ -203,6 +237,14 @@ tresult PLUGIN_API SynthProcessor::setState (IBStream* state)
 	if (streamer.readFloat(fval) == false) {
 		return kResultFalse;
 	}
+	fOsc2 = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+	fOsc2Mode = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 
 	return kResultOk;
 }
@@ -215,6 +257,8 @@ tresult PLUGIN_API SynthProcessor::getState (IBStream* state)
 
 	streamer.writeFloat(fOsc1);
 	streamer.writeFloat(fOsc1Mode);
+	streamer.writeFloat(fOsc2);
+	streamer.writeFloat(fOsc2Mode);
 
 	return kResultOk;
 }
