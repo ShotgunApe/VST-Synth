@@ -39,6 +39,11 @@ tresult PLUGIN_API SynthController::initialize (FUnknown* context)
 	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_2);
 	parameters.addParameter(STR16("OSC2 Shape"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_2_Shape);
 
+	parameters.addParameter(STR16("ATK"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Attack);
+	parameters.addParameter(STR16("DEC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Decay);
+	parameters.addParameter(STR16("SUS"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Sustain);
+	parameters.addParameter(STR16("REL"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Release);
+
 	return result;
 }
 
@@ -69,6 +74,11 @@ tresult PLUGIN_API SynthController::setComponentState (IBStream* state)
 	setParamNormalized(kOsc_1_Shape, fval);
 	setParamNormalized(kOsc_2, fval);
 	setParamNormalized(kOsc_2_Shape, fval);
+
+	setParamNormalized(kOsc_Attack, fval);
+	setParamNormalized(kOsc_Decay, fval);
+	setParamNormalized(kOsc_Sustain, fval);
+	setParamNormalized(kOsc_Release, fval);
 
 	return kResultOk;
 }

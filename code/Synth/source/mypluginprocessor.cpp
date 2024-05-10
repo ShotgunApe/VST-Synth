@@ -94,6 +94,19 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 						break;
 					case kOsc_2_Shape:
 						fOsc2Mode = (float)value;
+						break;
+					case kOsc_Attack:
+						fOscAttack = float(value);
+						break;
+					case kOsc_Decay:
+						fOscDecay = float(value);
+						break;
+					case kOsc_Sustain:
+						fOscSustain = float(value);
+						break;
+					case kOsc_Release:
+						fOscRelease = float(value);
+						break;
 				}
 			}
 		}
@@ -246,6 +259,23 @@ tresult PLUGIN_API SynthProcessor::setState (IBStream* state)
 		return kResultFalse;
 	}
 
+	fOscAttack = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+	fOscDecay = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+	fOscSustain = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+	fOscRelease = fval;
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
+
 	return kResultOk;
 }
 
@@ -259,6 +289,11 @@ tresult PLUGIN_API SynthProcessor::getState (IBStream* state)
 	streamer.writeFloat(fOsc1Mode);
 	streamer.writeFloat(fOsc2);
 	streamer.writeFloat(fOsc2Mode);
+	
+	streamer.writeFloat(fOscAttack);
+	streamer.writeFloat(fOscDecay);
+	streamer.writeFloat(fOscSustain);
+	streamer.writeFloat(fOscRelease);
 
 	return kResultOk;
 }

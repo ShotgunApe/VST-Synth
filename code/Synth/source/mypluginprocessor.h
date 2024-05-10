@@ -51,10 +51,9 @@ public:
 	Steinberg::tresult PLUGIN_API setState (Steinberg::IBStream* state) SMTG_OVERRIDE;
 	Steinberg::tresult PLUGIN_API getState (Steinberg::IBStream* state) SMTG_OVERRIDE;
 
-//------------------------------------------------------------------------
 protected:
 	float fOsc1 = default_Osc1;
-	float fOsc2 = default_Osc1;
+	float fOsc2 = default_Osc2;
 	float fOsc1Phase = 0.f;
 	float fOsc2Phase = 0.f;
 	float fFrequency = 0.f;
@@ -62,7 +61,21 @@ protected:
 	float fDeltaAngle = 0.f;
 	float fOsc1Mode = 0.f;
 	float fOsc2Mode = 0.f;
+
+	float fOscAttack = 0.f;
+	float fOscDecay = 0.f;
+	float fOscSustain = 0.f;
+	float fOscRelease = 0.f;
 };
+
+class EnvelopeGenerator {
+public:
+	/** ENVELOPE GENERATOR INFO */
+	
+private:
+
+};
+
 
 #define TWO_PI (3.14159265f * 2.f)
 
