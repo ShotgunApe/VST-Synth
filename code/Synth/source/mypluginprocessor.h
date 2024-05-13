@@ -71,9 +71,41 @@ protected:
 class EnvelopeGenerator {
 public:
 	/** ENVELOPE GENERATOR INFO */
-	
-private:
 
+	// Enum specific to finite state machine
+	enum EnvelopeStage {
+		ENVELOPE_STAGE_OFF = 0,
+		ENVELOPE_STAGE_ATTACK,
+		ENVELOPE_STAGE_DECAY,
+		ENVELOPE_STAGE_SUSTAIN,
+		ENVELOPE_STAGE_RELEASE,
+		kNumEnvelopeStages
+	};
+	void enterStage(EnvelopeStage newStage);
+	EnvelopeStage getCurrentStage();
+	const double minimumLevel;
+
+	EnvelopeGenerator() :
+		minimumLevel(0.0001),
+		currentStage(ENVELOPE_STAGE_OFF),
+		currentLevel(minimumLevel),
+		multiplier(1.0),
+		currentSampleIndex(0),
+		nextStageSampleIndex(0) {
+		stageValue[ENVELOPE_STAGE_OFF] = 0.0f;
+		stageValue[ENVELOPE_STAGE_ATTACK] = 0.01f;
+		stageValue[ENVELOPE_STAGE_DECAY] = 0.5f;
+		stageValue[ENVELOPE_STAGE_SUSTAIN] = 0.1f;
+		stageValue[ENVELOPE_STAGE_RELEASE] = 1.0f;
+	};
+private:
+	EnvelopeStage currentStage;
+	double currentLevel;
+	double multiplier;
+	double stageValue[kNumEnvelopeStages];
+	void calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples);
+	unsigned long long currentSampleIndex;
+	unsigned long long nextStageSampleIndex;
 };
 
 

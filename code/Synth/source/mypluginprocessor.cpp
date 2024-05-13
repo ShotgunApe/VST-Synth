@@ -111,6 +111,8 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 			}
 		}
 	}
+
+	// TODO: Add envelope generator stage changes
 	
 	//--- Here you have to implement your processing
 	Vst::IEventList* events = data.inputEvents;
@@ -126,10 +128,15 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 						fDeltaAngle = TWO_PI * fFrequency / data.processContext->sampleRate;
 						fVolume = 0.3f;
 						fOsc1Phase = 0.f;
+
+						// Enter envelope attack
+
 						break;
 					}
 					// If Note Off:
 					case Vst::Event::kNoteOffEvent:
+
+						// Enter envelope release
 						fVolume = 0.f;
 						break;
 				}
@@ -297,6 +304,24 @@ tresult PLUGIN_API SynthProcessor::getState (IBStream* state)
 
 	return kResultOk;
 }
+
+
+//------------------------------------------------------------------------
+// EnvelopeGenerator
+//------------------------------------------------------------------------
+
+void EnvelopeGenerator::enterStage(EnvelopeStage newStage) {
+	
+}
+
+EnvelopeGenerator::EnvelopeStage EnvelopeGenerator::getCurrentStage() {
+	return ENVELOPE_STAGE_ATTACK;
+}
+
+void EnvelopeGenerator::calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples) {
+
+}
+
 
 //------------------------------------------------------------------------
 } // namespace MyCompanyName
