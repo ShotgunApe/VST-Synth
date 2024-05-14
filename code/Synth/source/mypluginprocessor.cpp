@@ -199,6 +199,8 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 			outL[i] += fOsc2 * 2.0f * (fabs(temp) - 0.5f);
 		}
 
+		// Now that our waveforms are generated, enter envelope to determine the correct volume;
+
 		outL[i] *= fVolume;
 
 		// No panning support yet :(
@@ -307,19 +309,50 @@ tresult PLUGIN_API SynthProcessor::getState (IBStream* state)
 
 
 //------------------------------------------------------------------------
-// EnvelopeGenerator
+// EnvelopeGenerator specifics
 //------------------------------------------------------------------------
 
-void EnvelopeGenerator::enterStage(EnvelopeStage newStage) {
-	
+Steinberg::tresult PLUGIN_API SynthProcessor::enterStage(EnvelopeStage newStage, Steinberg::Vst::ProcessData& data) {
+	currentStage = newStage;
+	currentSampleIndex = 0;
+	if (currentStage == ENVELOPE_STAGE_OFF || currentStage == ENVELOPE_STAGE_SUSTAIN) {
+		nextStageSampleIndex = 0;
+	}
+	else {
+		nextStageSampleIndex = stageValue[currentStage] * data.processContext->sampleRate;
+	}
+	switch (newStage) {
+		case ENVELOPE_STAGE_OFF:
+			currentLevel = 0.0f;
+			multiplier = 1.0f;
+			break;
+		case ENVELOPE_STAGE_ATTACK:
+			currentLevel = minimumLevel;
+			calculateMultiplier(currentLevel, 1.0f, nextStageSampleIndex);
+			break;
+		case ENVELOPE_STAGE_DECAY:
+			currentLevel = 1.0f;
+			calculateMultiplier(currentLevel, fmax(stageValue[ENVELOPE_STAGE_SUSTAIN], minimumLevel), nextStageSampleIndex);
+			break;
+		case ENVELOPE_STAGE_SUSTAIN:
+			currentLevel = stageValue[ENVELOPE_STAGE_SUSTAIN];
+			multiplier = 1.0f;
+			break;
+		case ENVELOPE_STAGE_RELEASE:
+			calculateMultiplier(currentLevel, minimumLevel, nextStageSampleIndex);
+			break;
+		default:
+			break;
+	}
+	return kResultOk;
 }
 
-EnvelopeGenerator::EnvelopeStage EnvelopeGenerator::getCurrentStage() {
-	return ENVELOPE_STAGE_ATTACK;
+SynthProcessor::EnvelopeStage SynthProcessor::getCurrentStage() {
+	return currentStage;
 }
 
-void EnvelopeGenerator::calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples) {
-
+void SynthProcessor::calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples) {
+	multiplier = 1.0 + (log(endLevel) - log(startLevel)) / (lengthInSamples);
 }
 
 

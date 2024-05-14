@@ -51,6 +51,26 @@ public:
 	Steinberg::tresult PLUGIN_API setState (Steinberg::IBStream* state) SMTG_OVERRIDE;
 	Steinberg::tresult PLUGIN_API getState (Steinberg::IBStream* state) SMTG_OVERRIDE;
 
+	// For Envelopes
+	// Enum specific to finite state machine
+	enum EnvelopeStage {
+		ENVELOPE_STAGE_OFF = 0,
+		ENVELOPE_STAGE_ATTACK,
+		ENVELOPE_STAGE_DECAY,
+		ENVELOPE_STAGE_SUSTAIN,
+		ENVELOPE_STAGE_RELEASE,
+		kNumEnvelopeStages
+	};
+
+	Steinberg::tresult PLUGIN_API enterStage(EnvelopeStage newStage, Steinberg::Vst::ProcessData& data);
+	EnvelopeStage getCurrentStage();
+	const double minimumLevel = 0.0001f;
+	EnvelopeStage currentStage = ENVELOPE_STAGE_OFF;
+	double currentLevel = minimumLevel;
+	double multiplier = 1.0f;
+	unsigned long long currentSampleIndex = 0;
+	unsigned long long nextStageSampleIndex = 0;
+
 protected:
 	float fOsc1 = default_Osc1;
 	float fOsc2 = default_Osc2;
@@ -66,48 +86,10 @@ protected:
 	float fOscDecay = 0.f;
 	float fOscSustain = 0.f;
 	float fOscRelease = 0.f;
-};
 
-class EnvelopeGenerator {
-public:
-	/** ENVELOPE GENERATOR INFO */
-
-	// Enum specific to finite state machine
-	enum EnvelopeStage {
-		ENVELOPE_STAGE_OFF = 0,
-		ENVELOPE_STAGE_ATTACK,
-		ENVELOPE_STAGE_DECAY,
-		ENVELOPE_STAGE_SUSTAIN,
-		ENVELOPE_STAGE_RELEASE,
-		kNumEnvelopeStages
-	};
-	void enterStage(EnvelopeStage newStage);
-	EnvelopeStage getCurrentStage();
-	const double minimumLevel;
-
-	EnvelopeGenerator() :
-		minimumLevel(0.0001),
-		currentStage(ENVELOPE_STAGE_OFF),
-		currentLevel(minimumLevel),
-		multiplier(1.0),
-		currentSampleIndex(0),
-		nextStageSampleIndex(0) {
-		stageValue[ENVELOPE_STAGE_OFF] = 0.0f;
-		stageValue[ENVELOPE_STAGE_ATTACK] = 0.01f;
-		stageValue[ENVELOPE_STAGE_DECAY] = 0.5f;
-		stageValue[ENVELOPE_STAGE_SUSTAIN] = 0.1f;
-		stageValue[ENVELOPE_STAGE_RELEASE] = 1.0f;
-	};
-private:
-	EnvelopeStage currentStage;
-	double currentLevel;
-	double multiplier;
 	double stageValue[kNumEnvelopeStages];
 	void calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples);
-	unsigned long long currentSampleIndex;
-	unsigned long long nextStageSampleIndex;
 };
-
 
 #define TWO_PI (3.14159265f * 2.f)
 
