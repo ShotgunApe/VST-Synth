@@ -22,7 +22,7 @@ cmake.exe -G "Visual Studio 17 2022" -A x64 -B build -S vst3sdk -DSMTG_CREATE_PL
 ```
 If successful, this will generate a .sln file which can view each example included in the SDK. If the error ```CMake Error: Could not create named generator Visual Studio 17 2022``` occurs, ensure that you are using the latest version of CMake.
 
-2. Generate the project solution file ```Synth.sln``` in the github repo. Navigate to ```VST-Synth-main/code/``` and create the build folder, then use CMake again in a similar manner above:
+2. Generate the project solution file ```Synth.sln``` in the github repo. Navigate to ```../VST-Synth-main/code/``` and create the build folder, then use CMake again in a similar manner above:
 ```
 cmake.exe -G "Visual Studio 17 2022" -A x64 -B build -S Synth -DSMTG_CREATE_PLUGIN_LINK=0
 ```
@@ -38,4 +38,12 @@ When launching, Post-Build Events may cause the error [MSB3073](https://learn.mi
 Synth >> Properties >> Configuration Properties >> Build Events >> Post-Build Event >> Use In Build >> No
 ```
 ## WIP and Current State
-Currently, this synthesizer supports monophonic sine, saw, square, and triangle waves with a custom UI. 
+Currently, this synthesizer supports:
+- Two oscillators with monophonic sine, saw, square, and triangle waves.
+- An envelope generator.
+- A custom UI created with [JKnobMan](https://www.g200kg.com/jp/software/knobman.html).
+
+## Special Thanks
+- [Martin Finke](https://www.martin-finke.de/) and [aike lab](https://aikelab.net/) for their sources on synthesizer development.
+- My advisor Dr. Heather Guarnera for her guidance and support.
+- My friend [CJ](https://github.com/CCPupp) for testing and providing feedback.
