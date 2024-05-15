@@ -62,14 +62,20 @@ public:
 		kNumEnvelopeStages
 	};
 
+	// Function to keep track of + enter new stages of Envelope Generator
 	Steinberg::tresult PLUGIN_API enterStage(EnvelopeStage newStage, Steinberg::Vst::ProcessData& data);
 	EnvelopeStage getCurrentStage();
+
+	// Function that takes current sample and applies appropriate volume from Envelope 
+	double nextSampleVolume(Steinberg::Vst::ProcessData& data);
+	unsigned long long currentSampleIndex = 0;
+	unsigned long long nextStageSampleIndex = 0;
+
+	// default values
 	const double minimumLevel = 0.0001f;
 	EnvelopeStage currentStage = ENVELOPE_STAGE_OFF;
 	double currentLevel = minimumLevel;
 	double multiplier = 1.0f;
-	unsigned long long currentSampleIndex = 0;
-	unsigned long long nextStageSampleIndex = 0;
 
 protected:
 	float fOsc1 = default_Osc1;
@@ -82,10 +88,10 @@ protected:
 	float fOsc1Mode = 0.f;
 	float fOsc2Mode = 0.f;
 
-	float fOscAttack = 0.f;
-	float fOscDecay = 0.f;
-	float fOscSustain = 0.f;
-	float fOscRelease = 0.f;
+	float fOscAttack = default_Atk;
+	float fOscDecay = default_Dec;
+	float fOscSustain = default_Sus;
+	float fOscRelease = default_Rel;
 
 	double stageValue[kNumEnvelopeStages];
 	void calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples);

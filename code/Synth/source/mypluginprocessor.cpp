@@ -21,6 +21,13 @@ SynthProcessor::SynthProcessor ()
 {
 	//--- set the wanted controller for our processor
 	setControllerClass (kSynthControllerUID);
+
+	// Init values for Envelope Generator
+	stageValue[ENVELOPE_STAGE_OFF] = 0.0f;
+	stageValue[ENVELOPE_STAGE_ATTACK] = 0.02f;
+	stageValue[ENVELOPE_STAGE_DECAY] = 0.5f;
+	stageValue[ENVELOPE_STAGE_SUSTAIN] = 0.05f;
+	stageValue[ENVELOPE_STAGE_RELEASE] = 1.0f;
 }
 
 //------------------------------------------------------------------------
@@ -97,22 +104,24 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 						break;
 					case kOsc_Attack:
 						fOscAttack = float(value);
+						stageValue[ENVELOPE_STAGE_ATTACK] = fOscAttack;
 						break;
 					case kOsc_Decay:
 						fOscDecay = float(value);
+						stageValue[ENVELOPE_STAGE_DECAY] = fOscDecay;
 						break;
 					case kOsc_Sustain:
 						fOscSustain = float(value);
+						stageValue[ENVELOPE_STAGE_SUSTAIN] = fOscSustain;
 						break;
 					case kOsc_Release:
 						fOscRelease = float(value);
+						stageValue[ENVELOPE_STAGE_RELEASE] = fOscRelease;
 						break;
 				}
 			}
 		}
 	}
-
-	// TODO: Add envelope generator stage changes
 	
 	//--- Here you have to implement your processing
 	Vst::IEventList* events = data.inputEvents;
@@ -122,6 +131,7 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 			Vst::Event event;
 			if (events->getEvent(i, event) == kResultOk) {
 				switch (event.type) {
+
 					// If Note On:
 					case Vst::Event::kNoteOnEvent: {
 						fFrequency = 440.0f * powf(2.0f, (float)(event.noteOn.pitch - 69) / 12.f);
@@ -130,14 +140,14 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 						fOsc1Phase = 0.f;
 
 						// Enter envelope attack
-
+						enterStage(ENVELOPE_STAGE_ATTACK, data);
 						break;
 					}
 					// If Note Off:
 					case Vst::Event::kNoteOffEvent:
 
 						// Enter envelope release
-						fVolume = 0.f;
+						enterStage(ENVELOPE_STAGE_RELEASE, data);
 						break;
 				}
 			}
@@ -200,8 +210,7 @@ tresult PLUGIN_API SynthProcessor::process (Vst::ProcessData& data)
 		}
 
 		// Now that our waveforms are generated, enter envelope to determine the correct volume;
-
-		outL[i] *= fVolume;
+		outL[i] *= fVolume * nextSampleVolume(data);
 
 		// No panning support yet :(
 		outR[i] = outL[i];
@@ -244,7 +253,7 @@ tresult PLUGIN_API SynthProcessor::canProcessSampleSize (int32 symbolicSampleSiz
 //------------------------------------------------------------------------
 tresult PLUGIN_API SynthProcessor::setState (IBStream* state)
 {
-	// called when we load a preset, the model has to be reloaded
+	// called when we load a preset, the model has to be reloaded TODO: use loop to iterate thru each
 	IBStreamer streamer (state, kLittleEndian);
 	
 	float fval;
@@ -267,7 +276,6 @@ tresult PLUGIN_API SynthProcessor::setState (IBStream* state)
 	if (streamer.readFloat(fval) == false) {
 		return kResultFalse;
 	}
-
 	fOscAttack = fval;
 	if (streamer.readFloat(fval) == false) {
 		return kResultFalse;
@@ -291,7 +299,7 @@ tresult PLUGIN_API SynthProcessor::setState (IBStream* state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API SynthProcessor::getState (IBStream* state)
 {
-	// here we need to save the model
+	// here we need to save the model TODO: use loop to iterate thru each
 	IBStreamer streamer (state, kLittleEndian);
 
 	streamer.writeFloat(fOsc1);
@@ -349,6 +357,19 @@ Steinberg::tresult PLUGIN_API SynthProcessor::enterStage(EnvelopeStage newStage,
 
 SynthProcessor::EnvelopeStage SynthProcessor::getCurrentStage() {
 	return currentStage;
+}
+
+double SynthProcessor::nextSampleVolume(Steinberg::Vst::ProcessData& data) {
+	if (currentStage != ENVELOPE_STAGE_OFF &&
+		currentStage != ENVELOPE_STAGE_SUSTAIN) {
+		if (currentSampleIndex == nextStageSampleIndex) {
+			EnvelopeStage newStage = static_cast<EnvelopeStage>((currentStage + 1) % kNumEnvelopeStages);
+			enterStage(newStage, data);
+		}
+		currentLevel *= multiplier;
+		currentSampleIndex++;
+	}
+	return currentLevel;
 }
 
 void SynthProcessor::calculateMultiplier(double startLevel, double endLevel, unsigned long long lengthInSamples) {

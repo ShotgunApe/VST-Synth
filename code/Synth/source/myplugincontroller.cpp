@@ -36,13 +36,13 @@ tresult PLUGIN_API SynthController::initialize (FUnknown* context)
 	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_1);
 	parameters.addParameter(STR16("OSC1 Shape"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_1_Shape);
 
-	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_2);
+	parameters.addParameter(STR16("OSC"), nullptr, 0, default_Osc2, Vst::ParameterInfo::kCanAutomate, kOsc_2);
 	parameters.addParameter(STR16("OSC2 Shape"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_2_Shape);
 
-	parameters.addParameter(STR16("ATK"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Attack);
-	parameters.addParameter(STR16("DEC"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Decay);
-	parameters.addParameter(STR16("SUS"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Sustain);
-	parameters.addParameter(STR16("REL"), nullptr, 0, default_Osc1, Vst::ParameterInfo::kCanAutomate, kOsc_Release);
+	parameters.addParameter(STR16("ATK"), nullptr, 0, default_Atk, Vst::ParameterInfo::kCanAutomate, kOsc_Attack);
+	parameters.addParameter(STR16("DEC"), nullptr, 0, default_Dec, Vst::ParameterInfo::kCanAutomate, kOsc_Decay);
+	parameters.addParameter(STR16("SUS"), nullptr, 0, default_Sus, Vst::ParameterInfo::kCanAutomate, kOsc_Sustain);
+	parameters.addParameter(STR16("REL"), nullptr, 0, default_Rel, Vst::ParameterInfo::kCanAutomate, kOsc_Release);
 
 	return result;
 }
@@ -69,15 +69,34 @@ tresult PLUGIN_API SynthController::setComponentState (IBStream* state)
 	if (streamer.readFloat(fval) == false) {
 		return kResultFalse;
 	}
-
 	setParamNormalized(kOsc_1, fval);
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_1_Shape, fval);
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_2, fval);
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_2_Shape, fval);
-
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_Attack, fval);
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_Decay, fval);
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_Sustain, fval);
+	if (streamer.readFloat(fval) == false) {
+		return kResultFalse;
+	}
 	setParamNormalized(kOsc_Release, fval);
 
 	return kResultOk;

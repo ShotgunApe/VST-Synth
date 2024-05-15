@@ -11,5 +11,9 @@ enum {
 	kOsc_Release = 107
 };
 
-#define default_Osc1 0
+#define default_Osc1 0.5
 #define default_Osc2 0
+#define default_Atk 0.02
+#define default_Dec 0.5
+#define default_Sus 0.05
+#define default_Rel 1.0
