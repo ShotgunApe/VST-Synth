@@ -1,8 +1,15 @@
 \documentclass[12pt]{article}
 
-\title{Virtual Synthesizer Development in C++}
-\date{\vspace{-5ex}}
-\author{Will Sieber}
+\title{Additive Virtual Synthesizer Development in C++}
+\date{May 27th, 2024}
+
+% author hijacking is so real https://tex.stackexchange.com/questions/63384/add-additional-text-on-title-page
+\author{\parbox{\linewidth}{\centering%
+	Will Sieber
+	\endgraf\bigskip
+	Department of Computer Science, The College of Wooster
+	\bigskip
+}}
 
 \usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
 \usepackage{amsmath}
@@ -12,74 +19,88 @@
 \spacing{1.5}
 
 \begin{document}
-
 \maketitle
 
 % Latex can automatically build a table of contents for you
-\tableofcontents
 \newpage
+\tableofcontents
 
+\section{Abstract}
+Virtual synthesizers are tools used by musicians to generate sound for use in digital audio workstations. They are repackaged dynamic-link libraries under one of several existing specifications that ensure they are compatible with host applications. Several software development kits and libraries exist with the purpose of developing these tools, but this paper will focus on development under Steinberg's VST3 specification. This will serve as a quick-start guide to those interested in real time audio processing by first providing the theory behind computer audio, and then using this knowledge in a practical setting by developing a virtual additive synthesizer under the VST3 specification. This additive synthesizer will be able to generate several different waveforms with two different oscillators, alongside an envelope generator to control the articulation of the resulting waveform. Additional functionality common to other synthesizers will be included and discussed, but are not required to develop a functional program.
+\newpage
 
 \section{Introduction}
 
 \subsection{Project Goals}
 
-
 \section{Synthesizer Basics}
 
 \subsection{Components}
+There are several components of a synthesizer that work together in order to generate sound. This section will cover in detail the specific components that were implemented in software. Following this section, there will be another that provides further components that are commonly found in other synthesizers.
 
 \subsubsection{Oscillators}
-Oscillators can be generally broken into two categories: tone generators and controllers. Tone generators repeat periodic waves in order to generate sound. Simple tone generators can be expressed as mathematical expressions, such as \(f(x) = sin(x)\), while complex tone generators allow for any waveform to be repeated, regardless if they can be expressed as a single expression. Complex oscillators generally allow for a number of different waveforms to be represented in a single table, allowing for a user to select any number of waveforms in real time. Controller oscillators, on the other hand, are much lower frequency than tone oscillators, thus have the name \textit{Low-Frequency Oscillators} (LFOs). LFOs are generally used as an input to automate other parameters of a synthesizer, allowing for a greater range of timbres. For the purposes of this project, simple oscillators are used as tone generators. 
+Oscillators can be generally broken into two categories: tone generators and controllers. Tone generators repeat periodic waves in order to generate sound. Simple tone generators can be expressed as mathematical expressions, such as \(f(x) = sin(x)\), while complex tone generators allow for any waveform to be repeated, regardless if they can be expressed as a single expression. Complex oscillators generally allow for a number of different waveforms to be represented in a single table, allowing for a user to select any number of waveforms in real time. Controller oscillators, on the other hand, are much lower frequency than tone oscillators, thus have the name \textit{Low-Frequency Oscillators} (LFOs). These will be discussed in brief at a later section. For the purposes of this project, simple oscillators are used as tone generators.
 
 \subsubsection{Envelope Generators}
-In order to provide articulation, envelope generators describe how the amplitude of a particular sound should change over time. Several parameters are used to accomplish this goal, and those are the synthesizer's \textit{attack}, \textit{decay}, \textit{sustain}, and \textit{release}. \textit{Attack} describes how much time it takes for the synthesizer to reach full amplitude upon receiving the signal to generate sound. A short attack will reach full amplitude quickly, such as pressing a key on a piano or organ. Longer attacks will take more time to reach full amplitude, which create a "swelling" effect that is similar to that of a violin increasing in volume. \textit{Decay} describes how much time the synthesizer should take to reach a particular amplitude once the attack is finished. A longer decay will prolong a sound prior to the sustain, while a shorter will reach it quicker [word better]. \textit{Sustain}, unlike attack and decay, describes the amplitude itself to which the decay will reach upon completion. When reached, the synthesizer will continuously play at this amplitude until a signal is sent that it should stop generating sound. Upon this signal, \textit{release} describes how long the synthesizer should take to stop generating sound by gradually decreasing the amplitude to zero. In more technical terms []. 
+In order to provide articulation, envelope generators describe how the amplitude of a particular sound should change over time. Several parameters are used to accomplish this goal, and those are the synthesizer's \textit{attack}, \textit{decay}, \textit{sustain}, and \textit{release}. \textit{Attack} describes how much time it takes for the synthesizer to reach full amplitude upon receiving the signal to generate sound. Note that this is not the s A short attack will reach full amplitude quickly, such as playing on a piano or organ. Longer attacks will take more time to reach full amplitude, which create a "swelling" effect that is similar to that of a violin increasing in volume. \textit{Decay} describes how much time the synthesizer should take to reach a particular amplitude once the attack is finished. A longer decay will prolong a sound prior to the sustain, and vice versa. \textit{Sustain}, unlike attack and decay, describes the amplitude itself to which the decay will reach upon completion. When reached, the synthesizer will continuously play at this amplitude until a signal is sent that it should stop generating sound. Upon this signal, \textit{release} describes how long the synthesizer should take to stop generating sound by gradually decreasing the amplitude to zero. 
+
+In more technical terms, the envelope generator of our synthesizer is its own finite state machine that modifies our signal. The signal is modified by multiplying our source to a constantly changing value. This value has different behavior as to how it changes depending on if it is in the attack state, the decay state, and so on.  
 
 One may notice a problem with this model - the rate at which the attack, decay, and release change amplitude itself is not described. Powerful synthesizers allow for this change to be represented as a polynomial function, but for the purposes of this project, the rate at which each parameter changes will simply be linear. 
 
-With these two components in mind, one can create a simple synthesizer in the same manner that is described in this project.
+With these two components in mind, one can create a simple synthesizer in the same manner that is described in this project. 
 
-\subsection{Basic Types of Synthesis}
+\subsection{Extra Components}
+\subsubsection*{Filters}
+\subsubsection*{Digitally Controlled Amplifiers}
+\subsubsection*{Low-Frequency Oscillators}
+LFOs are generally used as an input to automate other parameters of a synthesizer, allowing for a greater range of timbres.
 
-\subsubsection{Additive Synthesis}
+\subsection{Additive Synthesis}
+This section describes the most common forms of synthesis techniques that can be used by musicians to create sound. A complex synthesizer will have functionality for each of the following and then some. 
 
-\subsubsection{Subtractive Synthesis}
+\subsection{Extra Synthesis Techniques}
 
-\subsubsection{Wavetable Synthesis}
+\subsubsection*{Subtractive Synthesis}
 
-\subsubsection{FM Synthesis}
+\subsubsection*{Wavetable Synthesis}
+
+\subsubsection*{FM Synthesis}
 
 \subsection{Architecture and Prototyping}
-
-\subsubsection{Pure Data / Max MSP}
 
 \subsubsection{Architecture Diagram}
 
 \section{Implementation}
 
 \subsection{Theory}
+There are a number of problems one faces when attempting to process real time audio. They can be summed up by asking the following questions: "How do we create a digital representation of sound?" and "How do we process audio fast enough to ensure there are no unwanted artifacts in our software?". The following section will address these concerns and provide the theory of what is occurring in the background of our software.
 
 \subsubsection{Discrete Signals}
+Sound is represented digitally by taking samples of the original source. An audio sample measures the amplitude of the source wave at a point in time, which is represented in code as a floating point number in the range \([-1, 1]\). Given a piece of audio, the number of samples per second represent the \textit{sample rate} of our recording. As a result, a higher sample rate will result in audio that more closely resembles the original source. Take the following diagram as an example:
+
+(insert diagram)
+
+Most commonly, audio files will have a sample rate of 44.1 kHz or 48 kHz. That means our software will need to process that number of samples per second, for \textit{each source we have}. For the purposes of this project, there are two audio sources: \textit{OSC1} and \textit{OSC2}. Each oscillator will generate a sound sampled at a rate that is decided by the host application, which by default will be 44.1 kHz.
 
 \subsubsection{Buffers}
+To process this large amount of data quickly, \textit{buffers} are used. A buffer [].
 
 \subsubsection{Flow of Information}
 
 \subsection{Comparison of Frameworks}
 
-\subsection{Introduction to the VST3 SDK}
+\subsection{VST3 SDK Development}
 
-\subsubsection{VST GUI and Development Tools}
+\subsubsection{Development Tools}
 
 \subsubsection{Workflow and UML diagram}
 
 \subsection{Creating Oscillators}
 
-\subsection{Applying ADSR}
+\subsection{Creating An Envelope Generator}
 
-\section{Effects and Extras}
-
-\section{Conclusion}
+\section{Conclusion and Future Work}
 
 
 % Bibliography
