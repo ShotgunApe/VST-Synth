@@ -97,7 +97,7 @@ Sound is represented digitally by taking samples of the original source. An audi
 
 (insert diagram)
 
-Most commonly, audio files will have a sample rate of 44.1 kHz or 48 kHz. That means our software will need to process that number of samples per second, for \textit{each source we have}. For the purposes of this project, there are two audio sources: \textit{OSC1} and \textit{OSC2}. Each oscillator will generate a sound sampled at a rate that is decided by the host application, which by default will be 44.1 kHz.
+Most commonly, audio files will have a sample rate of 44.1 kHz or 48 kHz. That means our software will need to process that number of samples per second, continuously. For the purposes of this project, there are two audio sources: \textit{OSC1} and \textit{OSC2}. Each oscillator will generate a sound sampled at a rate that is decided by the host application, which by default will be 44.1 kHz.
 
 \subsubsection{Buffers}
 To process this large amount of data quickly, \textit{buffers} are used.
