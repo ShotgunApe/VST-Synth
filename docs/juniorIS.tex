@@ -16,6 +16,8 @@
 \usepackage{hyperref}
 \usepackage{setspace}
 \usepackage{tikz-cd}
+\usepackage{pgfplots}
+\usepackage{graphicx}
 
 \spacing{1.5}
 
@@ -33,7 +35,7 @@ Virtual synthesizers are tools used by musicians to generate sound for use in di
 \section{Introduction}
 
 \subsection{Project Goals}
-This project initially had one goal in mind: create sound. In order to do so, one must first process MIDI data, generate the desired waveform, and create the user interface while ensuring the program's state changes accordingly. Upon overcoming this hurdle, several additional features could be implemented on this foundation that include additional oscillators, envelope generators, and more. Maintaining good practice while coding was an additional goal, so that others may take this project and change or modify it to their needs. That being said, prior to beginning development, it is important to understand how each element of a synthesizer works and how each fits together. 
+This project initially had one goal in mind: create sound. In order to do so, one must first process MIDI data, generate the desired waveform, and then create the user interface while ensuring the program's state changes accordingly. Upon overcoming this hurdle, several additional features could be implemented on this foundation that include additional oscillators, envelope generators, and more. Maintaining good practice while coding was an additional goal, so that others may take this project and change or modify it to their needs. That being said, prior to beginning development, it is important to understand how each element of a synthesizer works and how each fits together. 
 
 \section{Synthesizer Basics}
 
@@ -53,17 +55,18 @@ In more technical terms, the envelope generator of our synthesizer is its own fi
 
 One may notice a problem with this model - the rate at which the attack, decay, and release change amplitude itself is not described. Powerful synthesizers allow for this change to be represented as a polynomial function, but for the purposes of this project, the rate at which each parameter changes will simply be linear. 
 
-With these two components in mind, one can create a simple synthesizer in the same manner that is described in this project. What follows are additional components found commonly in synthesizers, but are not required to be present. That being said, it is still important to understand them provide a complete picture of what synthesizers are capable of. 
+With these two components in mind, one can create a simple synthesizer in the same manner that is described in this project. What follows are additional components found commonly in synthesizers, but are not required to be present. That being said, it is important to understand them to provide a complete picture of what synthesizers are capable of. 
 
 \subsection{Extra Components}
-\subsubsection*{Filters}
-
 
 \subsubsection*{Digitally Controlled Amplifiers}
-
+Digitally Controlled Amplifiers (DCAs) control the final amplitude or volume of the synthesizer. A good DCA will prevent the final output signal from going beyond the range [-1, 1] thus preventing unwanted artifacts. They can handle global panning as well, allowing the user to choose where the resulting sound should play from a pair of speakers. \cite{Pirkle_2015} For the purposes of this project, volume is controlled from each source oscillator.
 
 \subsubsection*{Low-Frequency Oscillators}
-LFOs are generally used as an input to automate other parameters of a synthesizer, allowing for a greater range of timbres.
+LFOs are generally used as an input to automate other parameters of a synthesizer, allowing for a greater range of timbres. They generally exist in a range much lower than human hearing (\textless 20 Hz) and can be of the same basic waveforms that tone generator oscillators use (sine, square, sawtooth, and triangle).
+
+\subsubsection*{Filters}
+Filters are a form of subtractive synthesis that remove frequencies based on a particular \textit{cutoff}. There are several types of filters that exist, with the most common being \textit{lowpass}, \textit{highpass}, and \textit{bandpass}. 
 
 \subsection{Additive Synthesis}
 
@@ -93,11 +96,90 @@ There are a number of problems one faces when attempting to process real time au
 The following section will address these concerns and provide the theory of what is occurring in the background of our software.
 
 \subsubsection{Discrete Signals}
-Sound is represented digitally by taking samples of the original source. An audio sample measures the amplitude of the source wave at a point in time, which is represented in code as a floating point number in the range \([-1, 1]\). Given a piece of audio, the number of samples per second represent the \textit{sample rate} of our recording. As a result, a higher sample rate will result in audio that more closely resembles the original source. Take the following diagram as an example:
+Sound is represented digitally by taking samples of the original source. An audio sample measures the amplitude of the source wave at a point in time, which is represented in code as a floating point number in the range \([-1, 1]\). Given a piece of audio, the number of samples per second represent the \textit{sample rate} of our recording. As a result, a higher sample rate will result in audio that more closely resembles the original source. Consider the following sine wave:
 
-(insert diagram)
+\begin{figure}[h] % [h] used to prevent {figure} from doing weird positioning
+\begin{center}
+	\begin{tikzpicture}
+		\begin{axis} [
+			axis x line = middle, % The x axis should go through the origin
+			xlabel = \(x\),
+			ylabel = {\(f(x)\)},
+			height = 5cm,
+			width = 12cm
+			]
+			
+			\addplot [
+			jump mark mid,
+			domain = -3.5:3.5,
+			samples = 1000,
+			very thick, red
+			] {(sin(deg(3 * x)))};
+			
+		\end{axis}
+	\end{tikzpicture}
+	\caption{A graph of the sine wave \(f(x) = sin(3x)\).}
+\end{center}
+\end{figure}
 
-Most commonly, audio files will have a sample rate of 44.1 kHz or 48 kHz. That means our software will need to process that number of samples per second, continuously. For the purposes of this project, there are two audio sources: \textit{OSC1} and \textit{OSC2}. Each oscillator will generate a sound sampled at a rate that is decided by the host application, which by default will be 44.1 kHz.
+A computer would interpret this signal by taking a number of samples at regular intervals:
+
+\begin{figure}[h] % [h] used to prevent {figure} from doing weird positioning
+	\begin{center}
+		\begin{tikzpicture}
+			\begin{axis} [
+				axis x line = middle, % The x axis should go through the origin
+				xlabel = \(x\),
+				ylabel = {\(f(x)\)},
+				height = 5cm,
+				width = 12cm
+				]
+				
+				\addplot+ [
+				ycomb,
+				mark = text,
+				text mark = , % so jank
+				domain = -3.5:3.5,
+				samples = 40,
+				red
+				] {(sin(deg(3 * x)))};
+				
+			\end{axis}
+		\end{tikzpicture}
+		\caption{A discrete graph of the sine wave \(f(x) = sin(3x)\) taken with 40 samples.}
+	\end{center}
+\end{figure}
+
+Thus, the higher number of samples per second would result in a sound that more closely resembles Figure 1:
+
+\begin{figure}[h] % [h] used to prevent {figure} from doing weird positioning
+	\begin{center}
+		\begin{tikzpicture}
+			\begin{axis} [
+				axis x line = middle, % The x axis should go through the origin
+				xlabel = \(x\),
+				ylabel = {\(f(x)\)},
+				height = 5cm,
+				width = 12cm
+				]
+				
+				\addplot+ [
+				ycomb,
+				mark = text,
+				text mark = , % so jank
+				domain = -3.5:3.5,
+				samples = 200,
+				red
+				] {(sin(deg(3 * x)))};
+				
+			\end{axis}
+		\end{tikzpicture}
+		\caption{A discrete graph of the sine wave \(f(x) = sin(3x)\) taken with 200 samples.}
+	\end{center}
+\end{figure}
+
+
+Most commonly, audio files will have a sample rate of 44.1 kHz or 48 kHz. That means our software will need to process that number of samples per second, continuously. For the purposes of this project, there are two audio sources: \textit{OSC1} and \textit{OSC2}. Each oscillator will generate a sound sampled at the rate that is decided by the host application.
 
 \subsubsection{Buffers}
 To process this large amount of data quickly, \textit{buffers} are used.
