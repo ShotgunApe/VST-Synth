@@ -1,6 +1,6 @@
 \documentclass[12pt]{article}
 
-\title{Additive Virtual Synthesizer Development in C++}
+\title{Virtual Synthesizer Development in C++}
 \date{May 27th, 2024}
 
 % author hijacking is so real https://tex.stackexchange.com/questions/63384/add-additional-text-on-title-page
@@ -19,6 +19,8 @@
 \usepackage{pgfplots}
 \usepackage{graphicx}
 
+\graphicspath{ {./images/} }
+
 \spacing{1.5}
 
 \begin{document}
@@ -29,7 +31,7 @@
 \tableofcontents
 
 \section{Abstract}
-Virtual synthesizers are tools used by musicians to generate sound for use in digital audio workstations. They are repackaged dynamic-link libraries under one of several existing specifications that ensure they are compatible with host applications. Several software development kits and libraries exist with the purpose of developing these tools, but this paper will focus on development under Steinberg's Virtual Studio Technology (VST3) specification. This will serve as a quick-start guide to those interested in real time audio processing by first providing the theory behind computer audio, and then using this knowledge in a practical setting by developing a virtual additive synthesizer under the VST3 specification. This additive synthesizer will be able to generate several different waveforms with two different oscillators, alongside an envelope generator to control the articulation of the resulting waveform. Additional functionality common to other synthesizers will be included and discussed, but are not required to develop a functional program.
+Virtual synthesizers are tools used by musicians to generate sound for use in digital audio workstations. They are repackaged dynamic-link libraries under one of several existing specifications that ensure they are compatible with host applications. Several software development kits and libraries exist with the purpose of developing these tools, but this paper will focus on development under Steinberg's Virtual Studio Technology (VST3) specification. This will serve as a quick-start guide to those interested in real time audio processing by first providing the theory behind computer audio, and then using this knowledge in a practical setting by developing a virtual additive synthesizer under the VST3 specification. This synthesizer will be able to generate several different waveforms with two different oscillators, alongside an envelope generator to control the articulation of the resulting waveform. Additional functionality common to other synthesizers will be included and discussed, but are not required to develop a functional program.
 \newpage
 
 \section{Introduction}
@@ -63,25 +65,25 @@ With these two components in mind, one can create a simple synthesizer in the sa
 Digitally Controlled Amplifiers (DCAs) control the final amplitude or volume of the synthesizer. A good DCA will prevent the final output signal from going beyond the range [-1, 1] thus preventing unwanted artifacts. They can handle global panning as well, allowing the user to choose where the resulting sound should play from a pair of speakers. \cite{Pirkle_2015} For the purposes of this project, volume is controlled from each source oscillator.
 
 \subsubsection*{Low-Frequency Oscillators}
-LFOs are generally used as an input to automate other parameters of a synthesizer, allowing for a greater range of timbres. They generally exist in a range much lower than human hearing (\textless 20 Hz) and can be of the same basic waveforms that tone generator oscillators use (sine, square, sawtooth, and triangle).
+Low-Frequency Oscillators (LFOs) are generally used as an input to automate other parameters of a synthesizer, allowing for a greater range of timbres. They generally exist in a range much lower than human hearing (\textless 20 Hz) and usually consist ofs the same basic waveforms that tone generator oscillators use (sine, square, sawtooth, and triangle).
 
 \subsubsection*{Filters}
-Filters are a form of subtractive synthesis that remove frequencies based on a particular \textit{cutoff}. There are several types of filters that exist, with the most common being \textit{lowpass}, \textit{highpass}, and \textit{bandpass}. 
+Filters are a form of subtractive synthesis that remove frequencies based on a particular \textit{cutoff}. There are several types of filters that exist, with the most common being \textit{lowpass}, \textit{highpass}, and \textit{bandpass}. Lowpass filters remove higher frequencies, allowing lower frequencies to "pass through" the filter, resulting in a "dark" sound. Highpass filters do the opposite, removing lower frequencies and passing through higher ones based on a particular cutoff frequency. Bandpass filters remove both upper and lower frequencies from a particular cutoff.
 
 \subsection{Additive Synthesis}
-
+Strictly speaking, this synthesizer will not be a fully functional additive synthesizer. By definition, an additive synthesizer works by adding sine waves of proper frequencies and amplitudes in order to generate the resulting wave one desires. \cite{Pirkle_2015} Doing so this way is considered "cleaner" and removes aliasing from the resulting wave. 
 
 \subsection{Extra Synthesis Techniques}
 
 \subsubsection*{Subtractive Synthesis}
+Subtractive synthesis is done by taking a wave and removing frequencies from the waveform. Filters are an example of subtractive synthesis, which have been covered in a previous section. 
 
 \subsubsection*{Wavetable Synthesis}
+Wavetable synthesis is a type of synthesis that allows a musicians to manipulate the waveform being used in real time. Instead of there being one of several simple waveforms to choose from, the user can select an entire array (or table) of waveforms that can be morphed from one to the next. This is known as \textit{digital interpolation}. 
 
 \subsubsection*{FM Synthesis}
+Frequency modulation (FM synthesis) is a type of waveform manipulation that uses one waveform to manipulate the frequency of another. An example of this can be see below: 
 
-\subsection{Architecture and Prototyping}
-
-\subsubsection{Architecture Diagram}
 
 \section{Implementation}
 
@@ -187,14 +189,13 @@ To process this large amount of data quickly, \textit{buffers} are used.
 \subsubsection{Flow of Information}
 
 % the goat https://ctan.math.washington.edu/tex-archive/graphics/pgf/contrib/tikz-cd/tikz-cd-doc.pdf
-% i could just put an image here but i want to try to be over-the-top
-\begin{tikzcd}
-	Test \arrow[r] \arrow[d]
-	& Test \arrow[d] \\
-	Test \arrow[r]
-	& Test
-\end{tikzcd}
-
+% i am just gonna put an image here
+\begin{center}
+	\begin{figure}[h]
+		\includegraphics[scale=0.4]{image1.png}
+		\caption{A graph of how audio information is handled throughout the system.}
+	\end{figure}
+\end{center}
 
 \subsection{Comparison of Frameworks}
 There are several competing standards to create virtual synthesizers (among other pieces of music software). They include - but are not limited to - VST(3), AU, AAX (DSP/Native), LV2, and CLAP. Each have their own benefits and drawbacks, but can largely be broken down into "what operating system are you writing for". VST is supported on both Windows and MacOS, while AU and AAX are supported exclusively on MacOS. 
