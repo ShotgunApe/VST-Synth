@@ -75,6 +75,13 @@ With these waveforms, musicians are capable of creating a number of sounds and t
 \subsubsection{Envelope Generators}
 In order to provide articulation, envelope generators describe how the amplitude of a particular sound should change over time. Several parameters are used to accomplish this goal, and those are the synthesizer's \textit{attack}, \textit{decay}, \textit{sustain}, and \textit{release} \cite{Pirkle_2021}. \textit{Attack} describes how much time it takes for the synthesizer to reach full amplitude upon receiving the signal to generate sound. A short attack will reach full amplitude quickly, such as playing on a piano or organ. Longer attacks will take more time to reach full amplitude, which create a "swelling" effect that is similar to that of a violin increasing in volume. \textit{Decay} describes how much time the synthesizer should take to reach a particular amplitude once the attack is finished. A longer decay will prolong a sound prior to the sustain, and vice versa. \textit{Sustain}, unlike attack and decay, describes the amplitude itself to which the decay will reach upon completion. When reached, the synthesizer will continuously play at this amplitude until a signal is sent that it should stop generating sound. Upon this signal, \textit{release} describes how long the synthesizer should take to stop generating sound by gradually decreasing the amplitude to zero. 
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.175]{adsr.png}
+	\caption{A diagram of an envelope generator.}
+\end{figure}
+
+
 In more technical terms, the envelope generator of our synthesizer is its own finite state machine that modifies our signal. The signal is modified through multiplying our source to a constantly changing value. This value has different behavior as to how it changes depending on the current state, such as the attack state, the decay state, and so on. One may notice a problem with this - the rate at which the attack, decay, and release change amplitude itself is not described. Powerful synthesizers allow for this change to be represented as a polynomial function, but for the purposes of this project, the rate at which each parameter changes will simply be linear. 
 
 With these two components in mind, one can create a simple synthesizer in the same manner that is described in this project. What follows are additional components found commonly in synthesizers, but are not required to be present. That being said, it is important to understand them to provide a complete picture of what synthesizers are capable of. 
@@ -159,7 +166,7 @@ A computer would interpret this signal by taking a number of samples at regular 
 	\end{center}
 \end{figure}
 
-Thus, the higher number of samples per second would result in a sound that more closely resembles Figure 2:
+Thus, the higher number of samples per second would result in a sound that more closely resembles Figure 3:
 
 \begin{figure}[h] % [h] used to prevent {figure} from doing weird positioning
 	\begin{center}
@@ -250,7 +257,7 @@ Generating a sine wave is as simple as using the \verb*|sin()| function provided
 		outL[i] = fOsc1 * sin(fOsc1Phase);
 \end{lstlisting} 
 
-The following equations generate sawtooth, square, and triangle waves, respectively:
+The following code generates sawtooth, square, and triangle waves, respectively:
 
 Sawtooth:
 \begin{lstlisting}
@@ -275,7 +282,38 @@ Triangle:
 
 
 \subsection{Creating An Envelope Generator}
+Once the initial waveform is generated, its amplitude can be modified in gradual ways to provide articulation to the synthesizer. In order to do this, a custom enumerated type \verb*|EnvelopeStage| is used with the following values:
 
+\begin{lstlisting}
+	enum EnvelopeStage {
+		ENVELOPE_STAGE_OFF = 0,
+		ENVELOPE_STAGE_ATTACK,
+		ENVELOPE_STAGE_DECAY,
+		ENVELOPE_STAGE_SUSTAIN,
+		ENVELOPE_STAGE_RELEASE,
+		kNumEnvelopeStages
+	};
+\end{lstlisting} 
+
+This keeps track of the current state of the played MIDI note. Upon receiving a signal to generate sound, one can change the state by entering a custom function \verb*|enterStage()|. This function determines which state the envelope generator should enter next, and calculates the appropriate multiplier to be used with the current oscillator. When calculating this multiplier, it is important to note that perception of volume changes logarithmically, so one must ensure this change is represented properly in code:
+
+\begin{lstlisting}[breaklines = true]
+	multiplier = 1.0 + (log(endLevel) - log(startLevel)) / (lengthInSamples);
+\end{lstlisting}
+
+With these in mind, it is simply a matter of multiplying the generated waveform by the appropriate amplitude created by the envelope generator:
+
+\begin{lstlisting}
+	outL[i] *= fVolume * nextSampleVolume(data);
+\end{lstlisting}
+
+Upon completing this, one can create an appropriate GUI to modify the parameters of the envelope generator.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.8]{program.PNG}
+	\caption{The final VST Plugin.}
+\end{figure}
 
 \newpage
 \section{Conclusion and Future Work}
