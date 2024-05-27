@@ -19,6 +19,7 @@
 \usepackage{pgfplots}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{wrapfig}
 
 \graphicspath{ {./images/} }
 
@@ -44,21 +45,21 @@ This project initially had one goal in mind: create sound. In order to do so, on
 \section{Synthesizer Basics}
 
 \subsection{What is a Synthesizer?}
-In essence, a synthesizer is a musical instrument that generates waveforms and provides several parameters to alter them in interesting ways. These parameters can interact with one another to create complex timbres, but are not necessary. Development of the modern synthesizer can be traced to the late 1950s, where the Columbia-Princeton Electronic Music Center became the prime location for composers interested in new and developing technologies \cite{Pejrolo_2017}. By the 1960s, physicist Robert "Bob" Moog would create an instrument known as the "Modular" which utilized a keyboard interface, exactly like one would play on a piano or organ, which became the first (realistic) commercially available option to buyers \cite{Pejrolo_2017}. Nowadays, computers are capable of creating sound exactly like a synthesizer would, and musicians commonly use these virtual synthesizers to produce popular music. 
+In essence, a synthesizer is a musical instrument that generates waveforms and provides several parameters to alter them in interesting ways. These parameters can interact with one another to create complex timbres. Development of the modern synthesizer can be traced to the late 1950s, where the Columbia-Princeton Electronic Music Center became the prime location for composers interested in new and developing technologies \cite{Pejrolo_2017}. By the 1960s, physicist Robert "Bob" Moog would create an instrument known as the "Modular" which utilized a keyboard interface, exactly like one would play on a piano or organ, which became the first (realistic) commercially available option to buyers \cite{Pejrolo_2017}. Nowadays, computers are capable of creating sound exactly like a synthesizer would, and musicians commonly use these virtual synthesizers to produce popular music. 
 
 \subsection{Components}
 There are several components of a synthesizer that work together in order to generate sound. This section will cover in detail the specific components that were implemented in software. Following this section, there will be another that provides additional components that are commonly found in other synthesizers.
 
 \subsubsection{Oscillators}
-Oscillators can be generally broken into two categories: tone generators and controllers. To generate sound, tone generators repeat periodic waves that can be expressed as mathematical expressions, such as \(f(x) = sin(x)\). More complex tone generators allow for any waveform to be repeated, regardless if they can be easily expressed as a single expression, but are not necessary to create the "fundamental" synthesizer waveforms. They also allow for a number of different waveforms to be represented in a single table, allowing for a user to select any number of waveforms in real time, but for the purposes of this project, simple oscillators are used as tone generators. Controller oscillators, on the other hand, are much lower frequency than tone oscillators, and are used to control other parameters of a synthesizer. These will be discussed in brief at a later section.
+Oscillators can be generally broken into two categories: tone generators and controllers. To generate sound, tone generators repeat periodic waves that can be expressed as mathematical expressions, such as \(f(x) = sin(x)\). More complex tone generators allow for any waveform to be repeated, regardless if they can be easily expressed as a single expression, but are not necessary to create the "fundamental" synthesizer waveforms. They also allow for a number of different waveforms to be represented in a single table, allowing for a user to select any number of waveforms in real time. For the purposes of this project, simple oscillators are used as tone generators. Controller oscillators, on the other hand, are much lower frequency than tone oscillators, and are used to control other parameters of a synthesizer. These will be discussed in brief at a later section.
 
 There are four simple waveforms that are considered "fundamental" for a synthesizer. These are the oscillator's \textit{sine}, \textit{square}, \textit{sawtooth}, and \textit{triangle} waveforms. Each have their own characteristics distinguishing them from one another, but can be loosely described in the following ways:
 
 \begin{enumerate}
-	\item Sine waves are considered "pure", as they contain no overtones. Should every instrument be isolated to its fundamental frequency, this is the tone that would result. For this reason, one might find this waveform as part of a sound lower in frequency, as more complex timbres may appear "muddy".
-	\item Square waves are "hollow" and are commonly used in subtractive synthesis. They contain several frequencies above its fundamental frequency (harmonics), but not as many as sawtooth waves. Square waves can be generalized as a specific case of \textit{pulse} waveforms, where in this case the positive portion of the waveform is equal length to the negative.
+	\item Sine waves are considered "pure", as they contain no overtones. Should every instrument be isolated to its fundamental frequency, this is the tone that would result. For this reason, one might find this waveform in the bass of a song, as more complex timbres may cause things to sound "muddy".
+	\item Square waves are "hollow" and are commonly used in subtractive synthesis. They contain several frequencies above its fundamental frequency (these are known as harmonics), but not as many as sawtooth waves. Square waves can be generalized as a specific case of \textit{pulse} waveforms, where in this case the positive portion of the waveform is equal length to the negative.
 	\item Sawtooth waves are "buzzy". They contain a greater number of harmonics than square waves, and are commonly used in subtractive synthesis as well.
-	\item Triangle waves are not as harsh than sawtooth waves, but not as "hollow" as square waves. They contain a different set of harmonics than square waves, thus providing a different timbre.
+	\item Triangle waves are not as harsh than sawtooth waves, but not as "hollow" as square waves. They contain a different set of harmonics as square waves, thus providing a different timbre.
 \end{enumerate}
 
 Images of each waveform can be seen below:
@@ -205,23 +206,44 @@ A buffer is an array of audio samples, with a length decided by the programmer. 
 	\end{figure}
 \end{center}
 
-That being said, there is no reason that buffers should miss the provided time limit, as computers have become increasingly efficient. That is, assuming one maintains good programming conventions when executing efficient code. For example, [].
+That being said, there is no reason that buffers should miss the provided time limit, as computers have become increasingly efficient, assuming one maintains proper programming conventions. For example, printing text to the terminal while performing calculations can cause a buffer to be missed. Operating system calls take a significant amount of time relative to what is allowed for by the audio driver, so it is best to avoid them altogether \cite{Doumler}.
+
+This extends into using unfamiliar classes and functions that may be present in 3rd party libraries, should one use them alongside a VST application. Common practice says to "use what you trust", and to create your own functions should you be unsure \cite{Goodlife}.
 
 \newpage
 \section{Implementation using VST3 SDK}
 
 \subsection{Development Tools}
-The VST3 SDK contains several tools and programs that assist in developing the boilerplate code necessary for creating VST applications and ensuring they fall under the required specification. These are the project generator, GUI editor, and validator. By using the project generator, a CMakeLists text file is generated. The program automatically compiles it, which creates a Visual Studio solution pre-configured with several components to test VST applications easily. 
+The VST3 SDK contains several tools and programs that assist in developing the boilerplate code necessary for creating VST applications and ensuring they fall under the required specification. These are the project generator, GUI editor, and validator. By using the project generator, a CMakeLists text file is generated, as well as a Visual Studio solution pre-configured with several components to test VST applications easily. 
 
-When the Visual Studio solution is started, a host application is started that can be used to quickly test MIDI input and audio output.
+Utilizing a CMake C++ project for development is effective. However, it does need to be changed frequently should the path to where the SDK is installed change, or should additional files be added (such as additional header files or custom graphics). A GUI-specific file \textit{myplugineditor.uidesc} must be correctly located in \verb*|resource/myplugineditor.uidesc|, or else undefined behavior will occur when attempting to load the GUI of the VST.
+
+When the Visual Studio solution is started, a host application is started that can be used to quickly test MIDI input and audio output. 
 
 Functions and classes under the VST3 SDK are organized under namespaces, in order to avoid name collisions \cite{Pirkle_2015}. The Steinberg namespace contains the Vst namespace, which in turn contains the programmer's namespace created by the project generator. 
 
-\subsection{Obtaining MIDI Input}
 Now that one can begin development, obtaining MIDI input is necessary before one can generate waveforms at the correct frequency. 
 
+\newpage
+\subsection{Obtaining MIDI Input}
+Every MIDI note corresponds to a particular integer \textit{n} in the range of 21 to 108. The corresponding note names range from A0 - C8, which in turn provides a range of frequencies between 27.5 Hz to 4186 Hz \cite{MIDI_online}. By utilizing a reference pitch, one can calculate the frequency \textit{F} from a particular MIDI note \textit{n} using the following equation:
+
+$$ F_n = 440 * 2^{(n - 69) / 12} $$
+
+In this case, the reference pitch is A4 at 440 Hz, with the corresponding MIDI number 69. A graph of each MIDI note and their corresponding frequency can be found on Figure 6.
+
+% cool graphix https://tex.stackexchange.com/questions/55161/how-to-arrange-image-and-text-to-appear-side-by-side
+\begin{wrapfigure}[18]{r}{6cm}
+	\includegraphics[width=5.25cm]{notes.png}
+	\caption{A graph of MIDI notes and their frequencies \cite{MIDI_online}.}\label{wrap-fig:1}
+\end{wrapfigure} 
+
+For MIDI notes lower than the reference note A4, the reference pitch is multiplied by 2, to the power of a negative number. While this may seem incorrect at first glance, this is indeed expected behavior as the resulting frequency will be one that is \textit{below} the initial reference pitch. From this, one is able to obtain the correct frequency upon receiving a particular MIDI signal.
+
+The VST SDK contains an event-handling class under the \verb*|Steinberg::Vst| namespace. When checking for a \verb|kNoteOnEvent| signal, one can obtain the MIDI note ID by using \verb*|event.noteOn.pitch|. From here, it is simply a matter of using the equation above and correctly initializing any additional parameters for the oscillator. 
+
 \subsection{Creating Oscillators}
-There are several methods of generating sine, square, saw, and triangle waves. 
+Upon receiving MIDI input, one can begin generating waveforms of a particular type. For this synthesizer, these will consist of the four previously mentioned waveforms: sine, square, sawtooth, and triangle. 
 
 \subsection{Creating An Envelope Generator}
 
