@@ -216,15 +216,14 @@ This extends into using unfamiliar classes and functions that may be present in 
 \subsection{Development Tools}
 The VST3 SDK contains several tools and programs that assist in developing the boilerplate code necessary for creating VST applications and ensuring they fall under the required specification. These are the project generator, GUI editor, and validator. By using the project generator, a CMakeLists text file is generated, as well as a Visual Studio solution pre-configured with several components to test VST applications easily. 
 
-Utilizing a CMake C++ project for development is effective. However, it does need to be changed frequently should the path to where the SDK is installed change, or should additional files be added (such as additional header files or custom graphics). A GUI-specific file \textit{myplugineditor.uidesc} must be correctly located in \verb*|resource/myplugineditor.uidesc|, or else undefined behavior will occur when attempting to load the GUI of the VST.
+Utilizing a CMake C++ project for development is effective. However, it does need to be changed frequently should additional files be added or changed (such as additional header files or custom graphics). A GUI-specific file \textit{myplugineditor.uidesc} must be correctly located in \verb*|resource/myplugineditor.uidesc|, or else undefined behavior will occur when attempting to load the GUI of the VST.
 
-When the Visual Studio solution is started, a host application is started that can be used to quickly test MIDI input and audio output. 
+There are two solution configurations included with the generated file: \verb*|Debug| and \verb*|Release|. When the Visual Studio solution is started, a host application launches that can quickly test MIDI input and audio output. Both configurations create a .vst3 file that can be launched with any digital audio workstation, but \verb*|Debug| allows for changes to be made to the GUI from the GUI editor.
 
-Functions and classes under the VST3 SDK are organized under namespaces, in order to avoid name collisions \cite{Pirkle_2015}. The Steinberg namespace contains the Vst namespace, which in turn contains the programmer's namespace created by the project generator. 
+Lastly, when programming, functions and classes under the VST3 SDK are organized under namespaces, in order to avoid name collisions \cite{Pirkle_2015}. The Steinberg namespace contains the Vst namespace, which in turn contains the programmer's namespace created by the project generator. 
 
 Now that one can begin development, obtaining MIDI input is necessary before one can generate waveforms at the correct frequency. 
 
-\newpage
 \subsection{Obtaining MIDI Input}
 Every MIDI note corresponds to a particular integer \textit{n} in the range of 21 to 108. The corresponding note names range from A0 - C8, which in turn provides a range of frequencies between 27.5 Hz to 4186 Hz \cite{MIDI_online}. By utilizing a reference pitch, one can calculate the frequency \textit{F} from a particular MIDI note \textit{n} using the following equation:
 
@@ -233,23 +232,54 @@ $$ F_n = 440 * 2^{(n - 69) / 12} $$
 In this case, the reference pitch is A4 at 440 Hz, with the corresponding MIDI number 69. A graph of each MIDI note and their corresponding frequency can be found on Figure 6.
 
 % cool graphix https://tex.stackexchange.com/questions/55161/how-to-arrange-image-and-text-to-appear-side-by-side
-\begin{wrapfigure}[18]{r}{6cm}
+\begin{wrapfigure}[20]{r}{5.5cm}
 	\includegraphics[width=5.25cm]{notes.png}
 	\caption{A graph of MIDI notes and their frequencies \cite{MIDI_online}.}\label{wrap-fig:1}
 \end{wrapfigure} 
 
 For MIDI notes lower than the reference note A4, the reference pitch is multiplied by 2, to the power of a negative number. While this may seem incorrect at first glance, this is indeed expected behavior as the resulting frequency will be one that is \textit{below} the initial reference pitch. From this, one is able to obtain the correct frequency upon receiving a particular MIDI signal.
 
-The VST SDK contains an event-handling class under the \verb*|Steinberg::Vst| namespace. When checking for a \verb|kNoteOnEvent| signal, one can obtain the MIDI note ID by using \verb*|event.noteOn.pitch|. From here, it is simply a matter of using the equation above and correctly initializing any additional parameters for the oscillator. 
+The VST3 SDK contains an event-handling class under the \verb*|Steinberg::Vst| namespace. When checking for a \verb|kNoteOnEvent| signal, one can obtain the MIDI note ID by using \verb*|event.noteOn.pitch|. From here, it is simply a matter of using the equation above and correctly initializing any additional parameters for the oscillator. 
 
 \subsection{Creating Oscillators}
-Upon receiving MIDI input, one can begin generating waveforms of a particular type. For this synthesizer, these will consist of the four previously mentioned waveforms: sine, square, sawtooth, and triangle. 
+Upon receiving MIDI input, one can begin generating waveforms of a particular type. For this synthesizer, these will consist of the four previously mentioned waveforms: sine, square, sawtooth, and triangle. To begin, a \textit{for} loop is utilized to step through each sample of a buffer. In the VST SDK, the \verb*|&data| parameter located in \verb*|Steinberg::Vst::ProcessData| contains the specific value \textit{numSamples} which has the buffer size. Using this, one then checks the state at which the GUI is currently in to determine which waveform to generate.
+
+Generating a sine wave is as simple as using the \verb*|sin()| function provided with C++. By providing the phase of our wave as an input and multiplying it by our current oscillator amplitude, one generates a sine wave:
+
+\begin{lstlisting}
+		outL[i] = fOsc1 * sin(fOsc1Phase);
+\end{lstlisting} 
+
+The following equations generate sawtooth, square, and triangle waves, respectively:
+
+Sawtooth:
+\begin{lstlisting}
+	outL[i] = fOsc1 * (1.0f - (2.0f * fOsc1Phase / TWO_PI));
+\end{lstlisting} 
+
+Square:
+\begin{lstlisting}
+	if (fOsc1Phase <= (TWO_PI / 2.f)) {
+		outL[i] = fOsc1 * 1.0f;
+	}
+	else {
+		outL[i] = fOsc1 * -1.0f;
+	}
+\end{lstlisting} 
+
+Triangle:
+\begin{lstlisting}
+	double temp = -1.0f + (2.0f * fOsc1Phase / TWO_PI);
+	outL[i] = fOsc1 * 2.0f * (fabs(temp) - 0.5f);
+\end{lstlisting} 
+
 
 \subsection{Creating An Envelope Generator}
 
+
 \newpage
 \section{Conclusion and Future Work}
-In this paper, we have discussed the fundamentals of how synthesizers work, and use this knowledge to create a virtual synthesizer utilizing the Virtual Studio Technology standard. This synthesizer obtains MIDI signals as input, and computes the frequency and waveform necessary to provide the desired output in one's host application. This signal can be further manipulated to provide articulation through the use of an envelope generator, which allows a musician to specify the attack, delay, sustain, and release of a particular sound.
+In this paper, we discussed the fundamentals of how synthesizers work, and used this knowledge to create a virtual synthesizer utilizing the Virtual Studio Technology standard. This synthesizer obtains MIDI signals as input, and computes the frequency and waveform necessary to provide the desired output in one's host application. This signal can be further manipulated to provide articulation through the use of an envelope generator, which allows a musician to specify the attack, delay, sustain, and release of a particular sound.
 
 As for future work, there are several routes to which one can take upon completion of this project. Should one continue working with MIDI signals as input, a more powerful wavetable synthesizer can be developed. As mentioned previously, this would allow waveforms of any type to be generated (such as by providing a wave file as input), and would have the functionality of morphing between several waveforms from a table in real time. If one would rather change gears and begin using sound itself as an input, then an \textit{effect plugin} can be created, such as one that provides reverb or chorus to a particular audio file. In both cases, several algorithms exist that each provide a slightly different sound that can be explored further by looking into different digital signal processing techniques.
 
